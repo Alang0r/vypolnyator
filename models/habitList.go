@@ -3,11 +3,18 @@ package models
 import "fmt"
 
 type HabitList struct {
-	Habits []Habit
+	Id           uint64 // id of the record
+	Name         string // name of habit
+	Description  string // dscr of habit
+	Habits       []Habit
+	NotifyPeriod uint64 // Notify repit period
 }
 
-func NewHabitList() HabitList {
-	l := HabitList{}
+func NewHabitList(name string, dscr string) HabitList {
+	l := HabitList{
+		Name:        name,
+		Description: dscr,
+	}
 	l.Habits = make([]Habit, 0)
 	return l
 }
@@ -32,5 +39,17 @@ func (l *HabitList) MarkHabitRepeat(id uint64, count uint64) {
 		if h.Id == id {
 			l.Habits[i].RemainingRepeats -= count
 		}
+	}
+}
+
+func (l *HabitList) Tick() {
+	for i, v := range l.Habits {
+		if !v.Completed {
+			l.Habits[i].RemainingDuration--
+			if v.RemainingDuration == 0 {
+				l.Habits[i].Completed = true
+			}
+		}
+
 	}
 }
