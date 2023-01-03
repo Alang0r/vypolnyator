@@ -6,6 +6,7 @@ import (
 
 	service "github.com/Alang0r/vypolnyator/pkg/service"
 	storage "github.com/Alang0r/vypolnyator/pkg/storage"
+	telegram "github.com/Alang0r/vypolnyator/pkg/telegram"
 )
 
 func main() {
@@ -18,8 +19,17 @@ func main() {
 
 	srv.Start()
 	log.Printf("Pechkin is listening on port: %s", *listenAddr)
-	// if err := srv.Start(); err != nil {
-	// 	log.Fatalf("Error during startup: %s", err.Error())
+	
+	params, err := telegram.GetParameters("https://api.telegram.org/bot", "token")
+	if err != nil {
+		log.Println(err)
+	}
 
-	// }
+	tg, err := telegram.NewTelegramCommunicator(*params)
+	if err != nil {
+		log.Println(err)
+	}
+
+	tg.ListenAndServe()
+
 }
