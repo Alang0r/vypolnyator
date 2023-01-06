@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"time"
+	"regexp"
 
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	tele "gopkg.in/telebot.v3"
@@ -53,4 +54,22 @@ func (c *Communicator) Listen() {
 
 func (c *Communicator) Send() {
 
+}
+
+func verifyRequest(message string) () {
+
+	// Check if message is request
+	match, err := regexp.MatchString(handlerRegexp, message)
+	if err != nil{
+		
+	}
+
+	if match {
+		if h, ok := handlers[message]; ok {
+
+			h.Execute()
+		}
+	}
+
+	
 }
