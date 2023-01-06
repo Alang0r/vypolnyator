@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
-	service "github.com/Alang0r/vypolnyator/pkg/service"
+	srvlib "github.com/Alang0r/vypolnyator/pkg/service"
 	storage "github.com/Alang0r/vypolnyator/pkg/storage"
 	telegram "github.com/Alang0r/vypolnyator/pkg/telegram"
 )
@@ -15,21 +16,18 @@ func main() {
 	listenAddr := flag.String("listenaddr", ":3001", "listening address")
 	flag.Parse()
 
-	srv := service.NewService("Pechkin", *listenAddr, mem)
+	srv := srvlib.NewService("Pechkin", *listenAddr, mem)
+	srv.GetParameters(telegram.ParamTgToken)
 
-	srv.Start()
+	go srv.Start()
 	log.Printf("Pechkin is listening on port: %s", *listenAddr)
-	
-	params, err := telegram.GetParameters("https://api.telegram.org/bot", "token")
+
+	c, err := telegram.NewCommunicator(srv.Params)
 	if err != nil {
-		log.Println(err)
+		fmt.Errorf("Error start communicator: %s", err)
 	}
 
-	tg, err := telegram.NewTelegramCommunicator(*params)
-	if err != nil {
-		log.Println(err)
-	}
-
-	tg.ListenAndServe()
+	c.Listen()
+	c.Start()
 
 }

@@ -6,18 +6,24 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
-	"github.com/Alang0r/vypolnyator/pkg/storage"
 
+	"github.com/Alang0r/vypolnyator/pkg/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 var Handlers map[string]Request
-var NewHandlers map[string] reflect.Type
+var NewHandlers map[string]reflect.Type
 
 func init() {
 	Handlers = make(map[string]Request)
 	NewHandlers = make(map[string]reflect.Type)
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+
 }
 
 func RegisterRequest(reqName string, req Request) {
@@ -31,6 +37,7 @@ type Service struct {
 	listenAddr string
 	store      storage.Storage
 	router     *gin.Engine
+	Params     map[string]string
 }
 
 func NewService(serviceName string, listenAddr string, storage storage.Storage) *Service {
@@ -38,6 +45,7 @@ func NewService(serviceName string, listenAddr string, storage storage.Storage) 
 		name:       serviceName,
 		store:      storage,
 		listenAddr: listenAddr,
+		Params:     make(map[string]string),
 	}
 }
 
@@ -98,7 +106,27 @@ func (srv *Service) handlerGetPersonById(w http.ResponseWriter, r *http.Request)
 
 }
 
-func execRequest(c *gin.Context, reqName string, req Request) error{
+func (srv *Service) GetParameters(paramName ...string) error {
+	for _, pName := range paramName {
+		p, err := getEnv(pName)
+		if err != nil {
+			return err
+		}
+		srv.Params[pName] = p
+	}
+	return nil
+}
+
+func getEnv(key string) (string, error) {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return "", fmt.Errorf("parameter not found %s", key)
+	}
+
+	return value, nil
+}
+
+func execRequest(c *gin.Context, reqName string, req Request) error {
 	// make map with parameters from request
 	// fill struct fields from map
 	// validate fields
@@ -107,7 +135,7 @@ func execRequest(c *gin.Context, reqName string, req Request) error{
 
 	// Get parameters from request
 	params := c.Request.URL.Query()
-	
+
 	tmp := reflect.New(NewHandlers[reqName]).Elem().Interface()
 
 	for param, value := range params {
@@ -119,9 +147,9 @@ func execRequest(c *gin.Context, reqName string, req Request) error{
 
 	rpl, err := req.Execute(c)
 
-			c.JSON(err.GetHttpCode(), gin.H{
-				"response": rpl,
-			})
+	c.JSON(err.GetHttpCode(), gin.H{
+		"response": rpl,
+	})
 	return nil
 }
 

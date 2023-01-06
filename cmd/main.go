@@ -8,8 +8,8 @@ func main() {
 
 	l := models.NewHabitList("My first list", "Description of my first list")
 
-	h := models.NewHabit(1, "TestHabit", "Descr for test", 365, 40)
-	h2 := models.NewHabit(2, "TesSecondtHabit", "ololo", 30, 4)
+	h := models.NewHabit(1, 1,"TestHabit", "Descr for test", 365, 40)
+	h2 := models.NewHabit(2,2, "TesSecondtHabit", "ololo", 30, 4)
 	l.Add(h)
 	l.Add(h2)
 
