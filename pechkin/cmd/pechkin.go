@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	srvlib "github.com/Alang0r/vypolnyator/pkg/service"
-	storage "github.com/Alang0r/vypolnyator/pkg/storage"
-	telegram "github.com/Alang0r/vypolnyator/pkg/telegram"
+	"github.com/Alang0r/vypolnyator/pkg/service"
+	"github.com/Alang0r/vypolnyator/pkg/storage"
+	"github.com/Alang0r/vypolnyator/pkg/telegram"
+	_ "github.com/Alang0r/vypolnyator/pechkin/internal/handlers"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 	listenAddr := flag.String("listenaddr", ":3001", "listening address")
 	flag.Parse()
 
-	srv := srvlib.NewService("Pechkin", *listenAddr, mem)
+	srv := service.NewService("Pechkin", *listenAddr, mem)
 	srv.GetParameters(telegram.ParamTgToken)
 
 	go srv.Start()

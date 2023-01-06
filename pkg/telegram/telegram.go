@@ -3,8 +3,20 @@ package telegram
 import (
 	"time"
 
+	"github.com/Alang0r/vypolnyator/pkg/service"
 	tele "gopkg.in/telebot.v3"
 )
+
+var handlers map[string]service.Request
+
+func init() {
+	handlers = make(map[string]service.Request)
+}
+
+type TeleHandler struct {
+	Func tele.HandlerFunc
+	MW   tele.MiddlewareFunc
+}
 
 type Communicator struct {
 	*tele.Bot
@@ -23,10 +35,19 @@ func NewCommunicator(params map[string]string) (*Communicator, error) {
 	return &c, nil
 }
 
+func RegisterHandler(hName string, hFunc service.Request) {
+	handlers[hName] = hFunc
+}
+
 func (c *Communicator) Listen() {
-	c.Handle("/hello", func(c tele.Context) error {
-		return c.Send("Hello!")
+
+	c.Handle(tele.OnText, func(c tele.Context) error {
+		if _, ok := handlers[c.Text()]; ok {
+			return c.Send("Aga!")
+		}
+		return c.Send("Ne-a!")
 	})
+
 	c.Start()
 }
 
