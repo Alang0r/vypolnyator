@@ -6,6 +6,7 @@ import (
 
 	service "github.com/Alang0r/vypolnyator/pkg/service"
 	storage "github.com/Alang0r/vypolnyator/pkg/storage"
+	_ "github.com/Alang0r/vypolnyator/sklad/api"
 )
 
 func main() {

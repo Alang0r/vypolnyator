@@ -1,8 +1,9 @@
 package telegram
 
 import (
-	"time"
+	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	tele "gopkg.in/telebot.v3"
@@ -44,7 +45,9 @@ func (c *Communicator) Listen() {
 
 	c.Handle(tele.OnText, func(c tele.Context) error {
 		if _, ok := handlers[c.Text()]; ok {
-			return c.Send("Aga!")
+			code, data := service.SendRequest(handlers[c.Text()], "http://localhost:3001")
+			prepRpl := fmt.Sprintf("%s returned %s  with code %s",c.Text(), data, code)
+			return c.Send(prepRpl)
 		}
 		return c.Send("Ne-a!")
 	})
@@ -65,10 +68,10 @@ func verifyRequest(message string) () {
 	}
 
 	if match {
-		if h, ok := handlers[message]; ok {
+		// if h, ok := handlers[message]; ok {
 
-			h.Execute()
-		}
+		// 	// h.Execute()
+		// }
 	}
 
 	

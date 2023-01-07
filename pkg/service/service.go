@@ -1,9 +1,11 @@
 package service
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -49,13 +51,16 @@ func NewService(serviceName string, listenAddr string, storage storage.Storage) 
 	}
 }
 
-func SendRequest(Request) {
-/*
-	var jsonData = []byte(`{
-		"name": "morpheus",
-		"job": "leader"
-	}`)
-	request, error := http.NewRequest("POST", httpposturl, bytes.NewBuffer(jsonData))
+type UniversalDTO struct {
+	Data interface{} `json:"data"`
+	// more fields with important meta-data about the message...
+}
+
+func SendRequest(r Request, url string)  (string, []byte){
+	dtoToSend := UniversalDTO{r}
+	byteData, _ := json.Marshal(dtoToSend)
+
+	request, error := http.NewRequest("POST", url, bytes.NewBuffer(byteData))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	client := &http.Client{}
@@ -69,8 +74,31 @@ func SendRequest(Request) {
 	fmt.Println("response Headers:", response.Header)
 	body, _ := ioutil.ReadAll(response.Body)
 	fmt.Println("response Body:", string(body))
+	return response.Status, body
 
-*/
+	/*
+	   	var jsonData = []byte(`{
+	   		"name": "morpheus",
+	   		"job": "leader"
+	   	}`)
+
+	   request, error := http.NewRequest("POST", httpposturl, bytes.NewBuffer(jsonData))
+	   request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	   client := &http.Client{}
+	   response, error := client.Do(request)
+
+	   	if error != nil {
+	   		panic(error)
+	   	}
+
+	   defer response.Body.Close()
+
+	   fmt.Println("response Status:", response.Status)
+	   fmt.Println("response Headers:", response.Header)
+	   body, _ := ioutil.ReadAll(response.Body)
+	   fmt.Println("response Body:", string(body))
+	*/
 }
 
 func (srv *Service) Start() {

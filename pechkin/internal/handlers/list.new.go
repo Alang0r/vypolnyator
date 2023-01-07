@@ -12,6 +12,7 @@ func init() {
 }
 
 type HandlerNewList struct {
+	
 }
 
 func (h *HandlerNewList) Execute(c *gin.Context) (service.Reply, error.Error) {

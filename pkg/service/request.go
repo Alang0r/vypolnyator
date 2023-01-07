@@ -7,8 +7,11 @@ import (
 
 type Request interface {
 	Execute(c *gin.Context) (Reply, error.Error)
-	GetService()
 }
 
 type Reply interface {
 }
+
+
+
+
