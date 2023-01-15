@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -56,7 +57,7 @@ type UniversalDTO struct {
 	// more fields with important meta-data about the message...
 }
 
-func SendRequest(r Request, url string)  (string, []byte){
+func SendRequestV1(r Request, url string) (string, []byte) {
 	dtoToSend := UniversalDTO{r}
 	byteData, _ := json.Marshal(dtoToSend)
 
@@ -72,33 +73,41 @@ func SendRequest(r Request, url string)  (string, []byte){
 
 	fmt.Println("response Status:", response.Status)
 	fmt.Println("response Headers:", response.Header)
-	body, _ := ioutil.ReadAll(response.Body)
+	body, _ := io.ReadAll(response.Body)
 	fmt.Println("response Body:", string(body))
 	return response.Status, body
+}
 
-	/*
-	   	var jsonData = []byte(`{
-	   		"name": "morpheus",
-	   		"job": "leader"
-	   	}`)
+// SendRequest - просто берем строку и шлем на юрл
+func SendRequestV2(reqStr string, url string)  string{
 
-	   request, error := http.NewRequest("POST", httpposturl, bytes.NewBuffer(jsonData))
-	   request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	var jsonData = []byte(`{
+		"name": "morpheus",
+		"job": "leader"
+	}`)
 
-	   client := &http.Client{}
-	   response, error := client.Do(request)
+	request, error := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
-	   	if error != nil {
-	   		panic(error)
-	   	}
+	if error != nil {
+		fmt.Println(error)
+		return ""
+	}
+	client := &http.Client{}
+	response, error := client.Do(request)
+	if error != nil {
+		panic(error)
+		
+	}
+	defer response.Body.Close()
 
-	   defer response.Body.Close()
+	fmt.Println("response Status:", response.Status)
+	fmt.Println("response Headers:", response.Header)
+	body, _ := ioutil.ReadAll(response.Body)
+	fmt.Println("response Body:", string(body))
 
-	   fmt.Println("response Status:", response.Status)
-	   fmt.Println("response Headers:", response.Header)
-	   body, _ := ioutil.ReadAll(response.Body)
-	   fmt.Println("response Body:", string(body))
-	*/
+	return string(body)
+
 }
 
 func (srv *Service) Start() {
@@ -121,8 +130,11 @@ func (srv *Service) Start() {
 	rtGroup := srv.router.Group(fmt.Sprintf("/%s", srv.name))
 
 	for reqName, req := range Handlers {
-		rtGroup.GET(reqName, func(c *gin.Context) {
-			execRequest(c, reqName, req)
+		rtGroup.POST(reqName, func(c *gin.Context) {
+			err := execRequest(c, reqName, req)
+			fmt.Println(err)
+			_ , _= req.Execute(c)
+			//execRequest(c, reqName, req)
 		})
 	}
 
@@ -185,17 +197,18 @@ func execRequest(c *gin.Context, reqName string, req Request) error {
 	// execute request
 	// return reply
 
-	// Get parameters from request
-	params := c.Request.URL.Query()
+	// Get parameters from GET request 
+	//params := c.Request.URL.Query()
 
 	tmp := reflect.New(NewHandlers[reqName]).Elem().Interface()
-
-	for param, value := range params {
-		err := SetField(tmp, param, value)
-		if err != nil {
-			return err
-		}
-	}
+	c.Bind(&tmp)
+	// for param, value := range params {
+	// 	err := SetField(tmp, param, value)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	fmt.Println(tmp)
 
 	rpl, err := req.Execute(c)
 

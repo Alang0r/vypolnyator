@@ -15,7 +15,7 @@ func main() {
 	listenAddr := flag.String("listenaddr", ":3001", "listening address")
 	flag.Parse()
 
-	srv := service.NewService("Sklad", *listenAddr, mem)
+	srv := service.NewService("sklad", *listenAddr, mem)
 
 	srv.Start()
 	log.Printf("Sklad is listening on port: %s", *listenAddr)

@@ -5,26 +5,29 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Alang0r/vypolnyator/pkg/service"
+	err "github.com/Alang0r/vypolnyator/pkg/error"
 	tele "gopkg.in/telebot.v3"
 )
 
-var handlers map[string]service.Request
+var handlers map[string]TeleHandler
 
 func init() {
-	handlers = make(map[string]service.Request)
+	handlers = make(map[string]TeleHandler)
 }
 
-type TeleHandler struct {
-	Func tele.HandlerFunc
-	MW   tele.MiddlewareFunc
+type TeleHandler interface {
+	Execute() (string, err.Error)
+}
+
+type TeleHandlerResult interface {
+
 }
 
 type Communicator struct {
 	*tele.Bot
 }
 
-func NewCommunicator(params map[string]string) (*Communicator, error) {
+func NewCommunicator(params map[string]string) (*Communicator, err.Error) {
 	c := Communicator{}
 
 	pref := tele.Settings{
@@ -34,19 +37,25 @@ func NewCommunicator(params map[string]string) (*Communicator, error) {
 
 	c.Bot, _ = tele.NewBot(pref)
 
-	return &c, nil
+	return &c, *err.New().SetCode(0)
 }
 
-func RegisterHandler(hName string, hFunc service.Request) {
+func RegisterHandler(hName string, hFunc TeleHandler) {
 	handlers[hName] = hFunc
 }
 
 func (c *Communicator) Listen() {
 
 	c.Handle(tele.OnText, func(c tele.Context) error {
-		if _, ok := handlers[c.Text()]; ok {
-			code, data := service.SendRequest(handlers[c.Text()], "http://localhost:3001")
-			prepRpl := fmt.Sprintf("%s returned %s  with code %s",c.Text(), data, code)
+		if h, ok := handlers[c.Text()]; ok {
+			rsp, err := h.Execute()
+			if err.Code != 0 {
+
+			}
+
+			//return c.Send(rsp)
+			
+			prepRpl := fmt.Sprintf("%s returned %s  with code %d",c.Text(), rsp, err.Code)
 			return c.Send(prepRpl)
 		}
 		return c.Send("Ne-a!")

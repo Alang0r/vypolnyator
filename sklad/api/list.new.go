@@ -15,5 +15,5 @@ type ReqNewList struct {
 
 func (r *ReqNewList) Execute(c *gin.Context) (service.Reply, error.Error) {
 	
-	return nil, *error.New().SetCode(0)
+	return nil, *error.New().SetCode(error.ErrCodeNone)
 }

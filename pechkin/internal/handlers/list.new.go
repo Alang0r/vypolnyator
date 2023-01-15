@@ -4,18 +4,23 @@ import (
 	"github.com/Alang0r/vypolnyator/pkg/error"
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	"github.com/Alang0r/vypolnyator/pkg/telegram"
-	"github.com/gin-gonic/gin"
 )
 
 func init() {
-	telegram.RegisterHandler("/newList", (*HandlerNewList)(nil))
+	telegram.RegisterHandler("/test", (*reqHandlerNewList)(nil))
 }
 
-type HandlerNewList struct {
-	
+type reqHandlerNewList struct {
 }
 
-func (h *HandlerNewList) Execute(c *gin.Context) (service.Reply, error.Error) {
+type rplHanderNewList struct {
+	Code    string
+	Message string
+}
 
-	return nil, *error.New().SetCode(0)
+func (h *reqHandlerNewList) Execute() (string, error.Error) {
+
+rpl := service.SendRequestV2("", "http://localhost:3001")
+
+	return rpl, *error.New().SetCode(0)
 }
