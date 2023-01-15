@@ -9,16 +9,29 @@ import (
 )
 
 func init() {
-	service.RegisterRequest("testRequest", (*TestReq)(nil))
+	service.RegisterRequest("TestRequest", (*TestRequest)(nil))
+	service.RegisterType( (*TestRequest)(nil))
 }
 
-type TestReq struct {
+func (r TestRequest) Request() string {
+	return "/sklad/TestRequest"
+}
+
+func (r TestRequest) Url() string {
+	return "http://localhost:3001"
+}
+
+
+type TestRequest struct {
+	Id   int
+	Name string
 }
 
 type TestRpl struct {
+	Exists bool
 }
 
-func (r *TestReq) Execute(c *gin.Context) (service.Reply, error.Error) {
+func (r *TestRequest) Execute(c *gin.Context) (service.Reply, error.Error) {
 	fmt.Println("zdarova")
 	rpl := TestRpl{}
 	return rpl, *error.New().SetCode(0)

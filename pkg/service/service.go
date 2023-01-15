@@ -19,6 +19,7 @@ import (
 
 var Handlers map[string]Request
 var NewHandlers map[string]reflect.Type
+var TypeRegistry = make(map[string]reflect.Type)
 
 func init() {
 	Handlers = make(map[string]Request)
@@ -33,6 +34,16 @@ func RegisterRequest(reqName string, req Request) {
 	Handlers[reqName] = req
 	t := reflect.TypeOf(req).Elem()
 	NewHandlers[reqName] = t
+}
+
+func RegisterType(typedNil interface{}) {
+	t := reflect.TypeOf(typedNil).Elem()
+	//TypeRegistry[t.PkgPath()+"."+t.Name()] = t
+	TypeRegistry[t.Name()] = t
+}
+
+func makeInstance(name string) interface{} {
+	return reflect.New(TypeRegistry[name]).Elem().Interface()
 }
 
 type Service struct {
@@ -79,7 +90,7 @@ func SendRequestV1(r Request, url string) (string, []byte) {
 }
 
 // SendRequest - просто берем строку и шлем на юрл
-func SendRequestV2(reqStr string, url string)  string{
+func SendRequestV2(reqStr string, url string) string {
 
 	var jsonData = []byte(`{
 		"name": "morpheus",
@@ -97,7 +108,7 @@ func SendRequestV2(reqStr string, url string)  string{
 	response, error := client.Do(request)
 	if error != nil {
 		panic(error)
-		
+
 	}
 	defer response.Body.Close()
 
@@ -133,13 +144,14 @@ func (srv *Service) Start() {
 		rtGroup.POST(reqName, func(c *gin.Context) {
 			err := execRequest(c, reqName, req)
 			fmt.Println(err)
-			_ , _= req.Execute(c)
+			_, _ = req.Execute(c)
 			//execRequest(c, reqName, req)
 		})
 	}
 
 	rtGroup.GET("")
 
+	log.Printf("Sklad is listening on port: %s", srv.listenAddr)
 	srv.router.Run(srv.listenAddr)
 
 }
@@ -197,18 +209,22 @@ func execRequest(c *gin.Context, reqName string, req Request) error {
 	// execute request
 	// return reply
 
-	// Get parameters from GET request 
-	//params := c.Request.URL.Query()
-
-	tmp := reflect.New(NewHandlers[reqName]).Elem().Interface()
-	c.Bind(&tmp)
-	// for param, value := range params {
-	// 	err := SetField(tmp, param, value)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	fmt.Println(tmp)
+	// tmp := reflect.New(NewHandlers[reqName]).Elem()
+	// c.Bind(&tmp)
+	// // for param, value := range params {
+	// // 	err := SetField(tmp, param, value)
+	// // 	if err != nil {
+	// // 		return err
+	// // 	}
+	// // }
+	// fmt.Println(tmp)
+	for _, p := range c.Params {
+		fmt.Println(p)
+	}
+	tmp1 := makeInstance(reqName)
+	fmt.Println(tmp1)
+	c.Bind(tmp1)
+	fmt.Println(tmp1)
 
 	rpl, err := req.Execute(c)
 
