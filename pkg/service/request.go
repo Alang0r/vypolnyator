@@ -22,6 +22,7 @@ type Reply interface {
 type RequestV2 interface {
 	Request() string
 	Url() string
+	Execute()  (Reply, error.Error)
 }
 
 type Response interface {
@@ -73,10 +74,11 @@ func (s *Sender) SendRequestV2(req RequestV2, rpl Response) *error.Error {
 		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
 	}
 
-	var res map[string]interface{}
+	// str := make(map[string]interface{})
+	// 	body, err := ioutil.ReadAll(resp.Body)
+	// json.Unmarshal(body, &str)
+	// fmt.Println(str)
 
-	json.NewDecoder(resp.Body).Decode(&res)
-
-	fmt.Println(res["json"])
+	json.NewDecoder(resp.Body).Decode(&rpl)
 	return nil
 }

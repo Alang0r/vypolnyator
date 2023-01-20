@@ -40,15 +40,15 @@ func TestSendReq(t *testing.T) {
 
 	s := service.NewRequestSender()
 
-	req := api.TestRequest{}
+	req := api.TestReqV2{}
 	req.Id = 1
 	req.Name = "Ololow"
-	rpl := api.TestRpl{}
+	rpl := api.TestRplV2{}
 
-	if errReq := s.SendRequestV2(req, rpl); errReq != nil {
+	if errReq := s.SendRequestV2(&req, &rpl); errReq != nil {
 		log.Println(errReq)
 	} else {
-		log.Println("Sucess!")
+		log.Printf("Sucess! Response: %+v", rpl)
 	}
 
 }

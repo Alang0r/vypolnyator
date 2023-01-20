@@ -12,6 +12,7 @@ import (
 	"os"
 	"reflect"
 
+	err "github.com/Alang0r/vypolnyator/pkg/error"
 	"github.com/Alang0r/vypolnyator/pkg/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -20,9 +21,11 @@ import (
 var Handlers map[string]Request
 var NewHandlers map[string]reflect.Type
 var TypeRegistry = make(map[string]reflect.Type)
+var HandlersV2 map[string]RequestV2
 
 func init() {
 	Handlers = make(map[string]Request)
+	HandlersV2 = make(map[string]RequestV2)
 	NewHandlers = make(map[string]reflect.Type)
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found")
@@ -34,6 +37,10 @@ func RegisterRequest(reqName string, req Request) {
 	Handlers[reqName] = req
 	t := reflect.TypeOf(req).Elem()
 	NewHandlers[reqName] = t
+}
+
+func RegisterRequestV2(name string, req RequestV2) {
+	HandlersV2[name] = req
 }
 
 func RegisterType(typedNil interface{}) {
@@ -139,15 +146,20 @@ func (srv *Service) Start() {
 	*/
 
 	rtGroup := srv.router.Group(fmt.Sprintf("/%s", srv.name))
-
-	for reqName, req := range Handlers {
+	for reqName, req := range HandlersV2 {
 		rtGroup.POST(reqName, func(c *gin.Context) {
-			err := execRequest(c, reqName, req)
-			fmt.Println(err)
-			_, _ = req.Execute(c)
-			//execRequest(c, reqName, req)
+			execRequestV2(c, reqName, req)
 		})
 	}
+
+	// for reqName, req := range Handlers {
+	// 	rtGroup.POST(reqName, func(c *gin.Context) {
+	// 		err := execRequest(c, reqName, req)
+	// 		fmt.Println(err)
+	// 		_, _ = req.Execute(c)
+	// 		//execRequest(c, reqName, req)
+	// 	})
+	// }
 
 	rtGroup.GET("")
 
@@ -203,28 +215,21 @@ func getEnv(key string) (string, error) {
 }
 
 func execRequest(c *gin.Context, reqName string, req Request) error {
-	// make map with parameters from request
-	// fill struct fields from map
-	// validate fields
-	// execute request
-	// return reply
 
-	// tmp := reflect.New(NewHandlers[reqName]).Elem()
-	// c.Bind(&tmp)
-	// // for param, value := range params {
-	// // 	err := SetField(tmp, param, value)
-	// // 	if err != nil {
-	// // 		return err
-	// // 	}
-	// // }
-	// fmt.Println(tmp)
-	for _, p := range c.Params {
-		fmt.Println(p)
-	}
-	tmp1 := makeInstance(reqName)
-	fmt.Println(tmp1)
-	c.Bind(tmp1)
-	fmt.Println(tmp1)
+	jsonData, _ := ioutil.ReadAll(c.Request.Body)
+
+	// Create a new struct using reflect
+	rType := reflect.TypeOf(Handlers[reqName])
+	newStruct := reflect.New(rType).Elem().Interface()
+	_ = json.Unmarshal(jsonData, &newStruct)
+
+	// for _, p := range c.Params {
+	// 	fmt.Println(p)
+	// }
+	// tmp1 := makeInstance(reqName)
+	// fmt.Println(tmp1)
+	// c.Bind(tmp1)
+	// fmt.Println(tmp1)
 
 	rpl, err := req.Execute(c)
 
@@ -255,4 +260,17 @@ func SetField(obj interface{}, name string, value interface{}) error {
 
 	structFieldValue.Set(val)
 	return nil
+}
+
+func execRequestV2(c *gin.Context, rName string, r RequestV2) err.Error {
+	
+	jsonData, _ := ioutil.ReadAll(c.Request.Body)
+	_ = json.Unmarshal(jsonData, &r)
+
+	rpl, err := r.Execute()
+
+	c.JSON(err.GetHttpCode(), gin.H{
+		"response": rpl,
+	})
+	return *err.SetCode(0)
 }
