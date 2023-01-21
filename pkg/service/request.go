@@ -78,7 +78,15 @@ func (s *Sender) SendRequestV2(req RequestV2, rpl Response) *error.Error {
 	// 	body, err := ioutil.ReadAll(resp.Body)
 	// json.Unmarshal(body, &str)
 	// fmt.Println(str)
+	body, _ := ioutil.ReadAll(resp.Body)
+	//fmt.Println(string(body))
 
-	json.NewDecoder(resp.Body).Decode(&rpl)
+	err = json.Unmarshal(body, &rpl)
+	if err != nil {
+        fmt.Println(err)
+    }
+
+
+	//json.NewDecoder(resp.Body).Decode(&rpl)
 	return nil
 }

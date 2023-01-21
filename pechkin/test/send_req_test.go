@@ -41,8 +41,8 @@ func TestSendReq(t *testing.T) {
 	s := service.NewRequestSender()
 
 	req := api.TestReqV2{}
-	req.Id = 1
-	req.Name = "Ololow"
+	req.Id = 5
+	req.Name = "Sasha"
 	rpl := api.TestRplV2{}
 
 	if errReq := s.SendRequestV2(&req, &rpl); errReq != nil {
