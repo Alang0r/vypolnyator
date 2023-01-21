@@ -12,12 +12,12 @@ func TestSendReq(t *testing.T) {
 
 	s := service.NewRequestSender()
 
-	req := api.TestReqV2{}
+	req := api.TestReq{}
 	req.Id = 5
-	req.Name = "Sasha"
-	rpl := api.TestRplV2{}
+	req.Name = "Vasya"
+	rpl := api.TestRpl{}
 
-	if errReq := s.SendRequestV2(&req, &rpl); errReq != nil {
+	if errReq := s.SendRequest(&req, &rpl); errReq != nil {
 		log.Println(errReq)
 	} else {
 		log.Printf("Sucess! Response: %+v", rpl)

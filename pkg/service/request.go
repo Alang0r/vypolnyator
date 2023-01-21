@@ -5,31 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/Alang0r/vypolnyator/pkg/error"
-	"github.com/gin-gonic/gin"
 )
 
-type Request interface {
-	Execute(c *gin.Context) (Reply, error.Error)
-}
+// type Request interface {
+// 	Execute(c *gin.Context) (Reply, error.Error)
+// }
 
 type Reply interface {
 }
 
-type RequestV2 interface {
+type Request interface {
 	Request() string
 	Url() string
-	Execute()  (Reply, error.Error)
+	Execute() (Reply, error.Error)
 }
 
 type Response interface {
 }
 
 type RequestSender interface {
-	SendRequest(RequestV2, Response) *error.Error
+	SendRequest(Request, Response) *error.Error
 }
 
 type Sender struct {
@@ -40,27 +38,7 @@ func NewRequestSender() Sender {
 	return s
 }
 
-func (s *Sender) SendRequest(req RequestV2, rpl Response) *error.Error {
-
-	resp, err := http.Get(req.Url() + req.Request())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(string(body))
-	return nil
-}
-
-func (s *Sender) SendRequestV2(req RequestV2, rpl Response) *error.Error {
+func (s *Sender) SendRequest(req Request, rpl Response) *error.Error {
 	json_data, err := json.Marshal(req)
 
 	if err != nil {
@@ -74,19 +52,12 @@ func (s *Sender) SendRequestV2(req RequestV2, rpl Response) *error.Error {
 		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
 	}
 
-	// str := make(map[string]interface{})
-	// 	body, err := ioutil.ReadAll(resp.Body)
-	// json.Unmarshal(body, &str)
-	// fmt.Println(str)
 	body, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(body))
 
 	err = json.Unmarshal(body, &rpl)
 	if err != nil {
-        fmt.Println(err)
-    }
+		fmt.Println(err)
+	}
 
-
-	//json.NewDecoder(resp.Body).Decode(&rpl)
 	return nil
 }

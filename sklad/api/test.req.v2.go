@@ -8,28 +8,28 @@ import (
 )
 
 func init() {
-	service.RegisterRequestV2("TestRequestV2",&TestReqV2{})
+	service.RegisterRequest("TestRequest",&TestReq{})
 }
 
-func (r TestReqV2) Request() string {
-	return "/sklad/TestRequestV2"
+func (r TestReq) Request() string {
+	return "/sklad/TestRequest"
 }
 
-func (r TestReqV2) Url() string {
+func (r TestReq) Url() string {
 	return "http://localhost:3001"
 }
 
-type TestReqV2 struct {
+type TestReq struct {
 	Id   int
 	Name string
 }
 
-type TestRplV2 struct {
+type TestRpl struct {
 	Data string `json:"response"`
 }
 
-func (r *TestReqV2) Execute() (service.Reply, error.Error) {
-rpl := &TestRplV2{}
+func (r *TestReq) Execute() (service.Reply, error.Error) {
+rpl := &TestRpl{}
 
 rpl.Data = fmt.Sprintf("Privet, %s, tvoy id: %d",r.Name, r.Id)
 

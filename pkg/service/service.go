@@ -1,10 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -14,13 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var HandlersV2 map[string]RequestV2
+var Handlers map[string]Request
 
 func init() {
-	HandlersV2 = make(map[string]RequestV2)
+	Handlers = make(map[string]Request)
 }
-func RegisterRequestV2(name string, req RequestV2) {
-	HandlersV2[name] = req
+func RegisterRequest(name string, req Request) {
+	Handlers[name] = req
 }
 
 type Service struct {
@@ -40,37 +39,6 @@ func NewService(serviceName string, listenAddr string, storage storage.Storage) 
 	}
 }
 
-// SendRequest - просто берем строку и шлем на юрл
-func SendRequestV2(reqStr string, url string) string {
-
-	var jsonData = []byte(`{
-		"name": "morpheus",
-		"job": "leader"
-	}`)
-
-	request, error := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
-
-	if error != nil {
-		fmt.Println(error)
-		return ""
-	}
-	client := &http.Client{}
-	response, error := client.Do(request)
-	if error != nil {
-		panic(error)
-
-	}
-	defer response.Body.Close()
-
-	fmt.Println("response Status:", response.Status)
-	fmt.Println("response Headers:", response.Header)
-	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Println("response Body:", string(body))
-
-	return string(body)
-
-}
 
 func (srv *Service) Start() {
 	srv.router = gin.Default()
@@ -90,9 +58,9 @@ func (srv *Service) Start() {
 	*/
 
 	rtGroup := srv.router.Group(fmt.Sprintf("/%s", srv.name))
-	for reqName, req := range HandlersV2 {
+	for reqName, req := range Handlers {
 		rtGroup.POST(reqName, func(c *gin.Context) {
-			execRequestV2(c, reqName, req)
+			execRequest(c, reqName, req)
 		})
 	}
 
@@ -127,9 +95,9 @@ func getEnv(key string) (string, error) {
 	return value, nil
 }
 
-func execRequestV2(c *gin.Context, rName string, r RequestV2) err.Error {
+func execRequest(c *gin.Context, rName string, r Request) err.Error {
 
-	jsonData, _ := ioutil.ReadAll(c.Request.Body)
+	jsonData, _ := io.ReadAll(c.Request.Body)
 	_ = json.Unmarshal(jsonData, &r)
 
 	rpl, err := r.Execute()

@@ -1,26 +1,26 @@
 package handlers
 
-import (
-	"github.com/Alang0r/vypolnyator/pkg/error"
-	"github.com/Alang0r/vypolnyator/pkg/service"
-	"github.com/Alang0r/vypolnyator/pkg/telegram"
-)
+// import (
+// 	"github.com/Alang0r/vypolnyator/pkg/error"
+// 	"github.com/Alang0r/vypolnyator/pkg/service"
+// 	"github.com/Alang0r/vypolnyator/pkg/telegram"
+// )
 
-func init() {
-	telegram.RegisterHandler("/test", (*reqHandlerNewList)(nil))
-}
+// func init() {
+// 	telegram.RegisterHandler("/test", (*reqHandlerNewList)(nil))
+// }
 
-type reqHandlerNewList struct {
-}
+// type reqHandlerNewList struct {
+// }
 
-type rplHanderNewList struct {
-	Code    string
-	Message string
-}
+// type rplHanderNewList struct {
+// 	Code    string
+// 	Message string
+// }
 
-func (h *reqHandlerNewList) Execute() (string, error.Error) {
+// func (h *reqHandlerNewList) Execute() (string, error.Error) {
 
-rpl := service.SendRequestV2("", "http://localhost:3001")
+// rpl := service.SendRequest("", "http://localhost:3001")
 
-	return rpl, *error.New().SetCode(0)
-}
+// 	return rpl, *error.New().SetCode(0)
+// }
