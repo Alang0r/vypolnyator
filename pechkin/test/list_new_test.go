@@ -1,26 +1,25 @@
 package test
 
 import (
-	"log"
+	"fmt"
 	"testing"
 
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	"github.com/Alang0r/vypolnyator/sklad/api"
 )
 
-func TestSendReq(t *testing.T) {
+func TestListNew(t *testing.T) {
 
 	s := service.NewRequestSender()
 
-	req := api.TestReq{}
-	req.Id = 5
-	req.Name = "Vasya"
-	rpl := api.TestRpl{}
+	req := api.RequestListNew{}
+	req.Name = "Dima"
+	rpl := api.ResponseListNew{}
 
 	if errReq := s.SendRequest(&req, &rpl); errReq != nil {
-		log.Println(errReq)
+		fmt.Println(errReq)
 	} else {
-		log.Printf("\nSucess! Response: %+v", rpl)
+		fmt.Printf("\nSucess! Response: %+v", rpl)
 	}
 
 }

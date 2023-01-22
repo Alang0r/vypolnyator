@@ -16,5 +16,5 @@ func main() {
 
 	srv := service.NewService("sklad", *listenAddr, mem)
 
-	srv.Start()
+	srv.Listen()
 }

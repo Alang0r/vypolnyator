@@ -8,18 +8,15 @@ import (
 )
 
 func init() {
-	service.RegisterRequest("TestRequest",&TestReq{})
+	service.RegisterHandler("/zTestRequest", &TestReq{})
 }
 
 func (r TestReq) Request() string {
-	return "/sklad/TestRequest"
-}
-
-func (r TestReq) Url() string {
-	return "http://localhost:3001"
+	return reqPrefix + "/zTestRequest"
 }
 
 type TestReq struct {
+	skladDefaultValues
 	Id   int
 	Name string
 }
@@ -29,13 +26,12 @@ type TestRpl struct {
 }
 
 func (r *TestReq) Execute() (service.Reply, error.Error) {
-rpl := &TestRpl{}
+	l := r.log()
+	
+	rpl := &TestRpl{}
 
-rpl.Data = fmt.Sprintf("Privet, %s, tvoy id: %d",r.Name, r.Id)
-
-
-
-
+	rpl.Data = fmt.Sprintf("Privet, %s, tvoy id: %d", r.Name, r.Id)
+	l.Info(rpl.Data)
 
 	return rpl, *error.New().SetCode(error.ErrCodeNone)
 }

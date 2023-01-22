@@ -13,13 +13,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var Handlers map[string]Request
+var Handlers map[string]Handler
 
 func init() {
-	Handlers = make(map[string]Request)
+	Handlers = make(map[string]Handler)
 }
-func RegisterRequest(name string, req Request) {
-	Handlers[name] = req
+
+func RegisterHandler(name string, h Handler) {
+	Handlers[name] = h
 }
 
 type Service struct {
@@ -39,8 +40,8 @@ func NewService(serviceName string, listenAddr string, storage storage.Storage) 
 	}
 }
 
-
 func (srv *Service) Start() {
+	gin.SetMode(gin.ReleaseMode)
 	srv.router = gin.Default()
 	/*
 		Тут нужно
@@ -61,10 +62,12 @@ func (srv *Service) Start() {
 	for reqName, req := range Handlers {
 		rtGroup.POST(reqName, func(c *gin.Context) {
 			execRequest(c, reqName, req)
+			//execRequestV2(c, &reqName, req)
 		})
+
 	}
 
-	log.Printf("Sklad is listening on port: %s", srv.listenAddr)
+	log.Printf("%s is listening on port: %s", srv.name, srv.listenAddr)
 	srv.router.Run(srv.listenAddr)
 
 }
@@ -95,12 +98,37 @@ func getEnv(key string) (string, error) {
 	return value, nil
 }
 
-func execRequest(c *gin.Context, rName string, r Request) err.Error {
+func execRequest(c *gin.Context, rName string, r Handler) err.Error {
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
 	_ = json.Unmarshal(jsonData, &r)
 
-	rpl, err := r.Execute()
-	c.JSON(err.GetHttpCode(), rpl)
-	return *err.SetCode(0)
+	rpl, error := r.Execute()
+	c.JSON(error.GetHttpCode(), rpl)
+	return *err.New().SetCode(0)
+}
+
+func execRequestV2(c *gin.Context) err.Error {
+	
+
+
+	return *err.New().SetCode(err.ErrCodeNone)
+}
+
+func (srv *Service) Listen() {
+	//gin.SetMode(gin.ReleaseMode)
+	srv.router = gin.Default()
+	for reqName, req := range Handlers {
+		h := req // создаем копию обработчика
+		srv.router.POST(srv.name+reqName, func(c *gin.Context) {
+			c.BindJSON(&h)
+			rpl, err := h.Execute()
+			c.JSON(err.GetHttpCode(), rpl)
+
+			// execRequest(c, reqName, h)
+			//execRequestV2(c, &reqName, req)
+		})
+	}
+	log.Printf("%s is listening on port: %s", srv.name, srv.listenAddr)
+	srv.router.Run(srv.listenAddr)
 }

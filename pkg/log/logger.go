@@ -10,6 +10,12 @@ type Logger struct {
 	log     zerolog.Logger
 }
 
+func NewLogger() Logger {
+	l := Logger{}
+	l.Init()
+	return l
+}
+
 func (logger *Logger) Init() {
 	logger.log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr,
 		TimeFormat: "2006-01-02 15:04:05 MST"}).With().

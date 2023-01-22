@@ -4,20 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/Alang0r/vypolnyator/pkg/error"
 )
 
-// type Request interface {
-// 	Execute(c *gin.Context) (Reply, error.Error)
-// }
-
 type Reply interface {
 }
 
-type Request interface {
+type Handler interface {
 	Request() string
 	Url() string
 	Execute() (Reply, error.Error)
@@ -27,7 +23,7 @@ type Response interface {
 }
 
 type RequestSender interface {
-	SendRequest(Request, Response) *error.Error
+	SendRequest(Handler, Response) *error.Error
 }
 
 type Sender struct {
@@ -38,13 +34,14 @@ func NewRequestSender() Sender {
 	return s
 }
 
-func (s *Sender) SendRequest(req Request, rpl Response) *error.Error {
+func (s *Sender) SendRequest(req Handler, rpl Response) *error.Error {
 	json_data, err := json.Marshal(req)
 
 	if err != nil {
 		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
 	}
 
+	fmt.Printf("Sending <%s> request to <%s>", req.Request(), req.Url())
 	resp, err := http.Post(req.Url()+req.Request(), "application/json",
 		bytes.NewBuffer(json_data))
 
@@ -52,7 +49,7 @@ func (s *Sender) SendRequest(req Request, rpl Response) *error.Error {
 		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
 	}
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 
 	err = json.Unmarshal(body, &rpl)
 	if err != nil {
