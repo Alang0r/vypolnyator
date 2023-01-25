@@ -1,13 +1,15 @@
 package log
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog"
 )
 
 type Logger struct {
-	log     zerolog.Logger
+	Name string
+	log  zerolog.Logger
 }
 
 func NewLogger() Logger {
@@ -16,9 +18,12 @@ func NewLogger() Logger {
 	return l
 }
 
-func (logger *Logger) Init() {
+func (logger *Logger) Init(args...string) {
+	if len(args) != 0 {
+		logger.Name = args[0]
+	}
 	logger.log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr,
-		TimeFormat: "2006-01-02 15:04:05 MST"}).With().
+		TimeFormat: "2006-01-02 15:04:05"}).With().
 		Timestamp().
 		Logger()
 }
@@ -28,7 +33,8 @@ func (logger *Logger) Errorf(template string, args ...interface{}) {
 }
 
 func (logger *Logger) Infof(template string, args ...interface{}) {
-	logger.log.Info().Msgf(template, args...)
+	tmp := fmt.Sprintf("%s: %s", logger.Name, template)
+	logger.log.Info().Msgf(tmp, args...)
 }
 func (logger *Logger) Info(msg string) {
 	logger.log.Info().Msg(msg)

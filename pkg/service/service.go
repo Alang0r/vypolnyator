@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 
 	err "github.com/Alang0r/vypolnyator/pkg/error"
+	"github.com/Alang0r/vypolnyator/pkg/log"
+	"github.com/Alang0r/vypolnyator/pkg/middleware"
 	"github.com/Alang0r/vypolnyator/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +29,7 @@ type Service struct {
 	listenAddr string
 	store      storage.Storage
 	router     *gin.Engine
+	Log        log.Logger
 	Params     map[string]string
 }
 
@@ -40,6 +42,7 @@ func NewService(serviceName string, listenAddr string, storage storage.Storage) 
 	}
 }
 
+// Deprecated
 func (srv *Service) Start() {
 	gin.SetMode(gin.ReleaseMode)
 	srv.router = gin.Default()
@@ -67,7 +70,7 @@ func (srv *Service) Start() {
 
 	}
 
-	log.Printf("%s is listening on port: %s", srv.name, srv.listenAddr)
+	srv.Log.Infof("%s is listening on port: %s", srv.name, srv.listenAddr)
 	srv.router.Run(srv.listenAddr)
 
 }
@@ -109,26 +112,26 @@ func execRequest(c *gin.Context, rName string, r Handler) err.Error {
 }
 
 func execRequestV2(c *gin.Context) err.Error {
-	
-
 
 	return *err.New().SetCode(err.ErrCodeNone)
 }
 
 func (srv *Service) Listen() {
-	//gin.SetMode(gin.ReleaseMode)
-	srv.router = gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	srv.router = gin.New()
+
+	srv.Log.Init(srv.name)
+
+	srv.router.Use(middleware.NewMiddleware(&srv.Log))
 	for reqName, req := range Handlers {
-		h := req // создаем копию обработчика
+		h := req 	
 		srv.router.POST(srv.name+reqName, func(c *gin.Context) {
 			c.BindJSON(&h)
 			rpl, err := h.Execute()
 			c.JSON(err.GetHttpCode(), rpl)
 
-			// execRequest(c, reqName, h)
-			//execRequestV2(c, &reqName, req)
 		})
 	}
-	log.Printf("%s is listening on port: %s", srv.name, srv.listenAddr)
+	srv.Log.Infof("%s is listening on port: %s", srv.name, srv.listenAddr)
 	srv.router.Run(srv.listenAddr)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 
 	_ "github.com/Alang0r/vypolnyator/pechkin/internal/handlers"
@@ -21,12 +20,12 @@ func main() {
 	srv := service.NewService("Pechkin", *listenAddr, mem)
 	srv.GetParameters(telegram.ParamTgToken)
 
-	go srv.Start()
+	go srv.Listen()
 	log.Printf("Pechkin is listening on port: %s", *listenAddr)
 
 	c, err := telegram.NewCommunicator(srv.Params)
 	if err.Code != error.ErrCodeNone {
-		fmt.Errorf("Error start communicator: %s", err)
+		srv.Log.Errorf("Error start communicator: %s", err)
 	}
 
 	c.Listen()
