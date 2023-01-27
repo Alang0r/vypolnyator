@@ -6,82 +6,87 @@ import (
 	"time"
 
 	err "github.com/Alang0r/vypolnyator/pkg/error"
+	"github.com/Alang0r/vypolnyator/pkg/service"
 	tele "gopkg.in/telebot.v3"
 )
 
-var handlers map[string]TeleHandler
+var THandlers map[string]THandler
 
 func init() {
-	handlers = make(map[string]TeleHandler)
+	THandlers = make(map[string]THandler)
 }
 
-type TeleHandler interface {
-	Execute() (string, err.Error)
+type THandler interface {
+	Run() (string, err.Error)
 }
 
-type TeleHandlerResult interface {
-
+type TResult interface {
 }
 
-type Communicator struct {
+type Bot struct {
+	tH map[string]THandler
 	*tele.Bot
 }
 
-func NewCommunicator(params map[string]string) (*Communicator, err.Error) {
-	c := Communicator{}
+func NewBot(s *service.Service) (*Bot, err.Error) {
+	b := Bot{}
 
+	t := s.GetEnvVariable(ParamTgToken)
 	pref := tele.Settings{
-		Token:  params[ParamTgToken],
+		Token:  t,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	}
 
-	c.Bot, _ = tele.NewBot(pref)
+	b.Bot, _ = tele.NewBot(pref)
+	b.tH = make(map[string]THandler)
+	b.tH = THandlers
 
-	return &c, *err.New().SetCode(0)
+	return &b, *err.New().SetCode(0)
 }
 
-func RegisterHandler(hName string, hFunc TeleHandler) {
-	handlers[hName] = hFunc
+func RegisterHandler(hName string, hFunc THandler) {
+	THandlers[hName] = hFunc
 }
 
-func (c *Communicator) Listen() {
+func (b *Bot) Listen() {
 
-	c.Handle(tele.OnText, func(c tele.Context) error {
-		if h, ok := handlers[c.Text()]; ok {
-			rsp, err := h.Execute()
+	b.Handle(tele.OnText, func(c tele.Context) error {
+		rText := c.Text()
+
+		if h, ok := b.tH[rText]; ok {
+			rsp, err := h.Run()
 			if err.Code != 0 {
-
+				return c.Send(fmt.Sprintf("error run request: %d, %s", err.Code, err.Description))
 			}
 
-			//return c.Send(rsp)
-			
-			prepRpl := fmt.Sprintf("%s returned %s  with code %d",c.Text(), rsp, err.Code)
+			prepRpl := fmt.Sprintf("%s returned %s  with code %d", c.Text(), rsp, err.Code)
 			return c.Send(prepRpl)
+		} else {
+			return c.Send("Not Found")
 		}
-		return c.Send("Ne-a!")
+
+		
 	})
 
-	c.Start()
+	b.Start()
 }
 
-func (c *Communicator) Send() {
+func (c *Bot) Send() {
 
 }
 
-func verifyRequest(message string) () {
+func verifyRequest(message string) {
 
 	// Check if message is request
 	match, err := regexp.MatchString(handlerRegexp, message)
-	if err != nil{
-		
+	if err != nil {
+
 	}
 
 	if match {
-		// if h, ok := handlers[message]; ok {
-
-		// 	// h.Execute()
-		// }
+		if h, ok := THandlers[message]; ok {
+			h.Run()
+		}
 	}
 
-	
 }

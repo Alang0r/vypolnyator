@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	_ "github.com/Alang0r/vypolnyator/pechkin/internal/handlers"
 	"github.com/Alang0r/vypolnyator/pkg/error"
@@ -11,8 +10,9 @@ import (
 	"github.com/Alang0r/vypolnyator/pkg/telegram"
 )
 
-func main() {
+var teleHandlers map[string] telegram.THandler
 
+func main() {
 	mem := storage.NewMemoryStorage()
 	listenAddr := flag.String("listenaddr", ":3002", "listening address")
 	flag.Parse()
@@ -21,14 +21,12 @@ func main() {
 	srv.GetParameters(telegram.ParamTgToken)
 
 	go srv.Listen()
-	log.Printf("Pechkin is listening on port: %s", *listenAddr)
 
-	c, err := telegram.NewCommunicator(srv.Params)
+	b, err := telegram.NewBot(srv)
 	if err.Code != error.ErrCodeNone {
-		srv.Log.Errorf("Error start communicator: %s", err)
+		srv.Log.Errorf("Error start bot: %s", err)
 	}
 
-	c.Listen()
-	c.Start()
+	b.Listen()
 
 }

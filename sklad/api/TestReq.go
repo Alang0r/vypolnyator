@@ -21,7 +21,6 @@ package api
 // 	return "http://localhost:3001"
 // }
 
-
 // type TestReq struct {
 // 	Id   int
 // 	Name string
@@ -31,7 +30,7 @@ package api
 // 	Data string
 // }
 
-// func (r *TestReq) Execute(c *gin.Context) (service.Reply, error.Error) {
+// func (r *TestReq) Run(c *gin.Context) (service.Reply, error.Error) {
 // 	fmt.Println("zdarova")
 // 	rpl := TestRpl{}
 // 	rpl.Data = fmt.Sprintf("Helo, ")

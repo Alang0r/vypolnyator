@@ -26,9 +26,9 @@ type TestRpl struct {
 	Data string `json:"response"`
 }
 
-func (r *TestReq) Execute() (service.Reply, error.Error) {
+func (r *TestReq) Run() (service.Reply, error.Error) {
 	//l := r.log()
-	
+
 	rpl := &TestRpl{}
 
 	rpl.Data = fmt.Sprintf("Privet, %s, tvoy id: %d", r.Name, r.Id)

@@ -17,7 +17,7 @@ package api
 // 	Age uint64
 // }
 
-// func (r *ReqTestJson) Execute(c *gin.Context) (service.Reply, error.Error) {
+// func (r *ReqTestJson) Run(c *gin.Context) (service.Reply, error.Error) {
 // 	req := ReqTestJson{}
 // 	c.Bind(&req)
 

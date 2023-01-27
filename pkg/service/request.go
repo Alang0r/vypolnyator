@@ -16,7 +16,7 @@ type Reply interface {
 type Handler interface {
 	Request() string
 	Url() string
-	Execute() (Reply, error.Error)
+	Run() (Reply, error.Error)
 }
 
 type Response interface {

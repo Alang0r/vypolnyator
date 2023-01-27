@@ -12,12 +12,14 @@ import (
 	"github.com/Alang0r/vypolnyator/pkg/middleware"
 	"github.com/Alang0r/vypolnyator/pkg/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 var Handlers map[string]Handler
 
 func init() {
 	Handlers = make(map[string]Handler)
+
 }
 
 func RegisterHandler(name string, h Handler) {
@@ -40,39 +42,6 @@ func NewService(serviceName string, listenAddr string, storage storage.Storage) 
 		listenAddr: listenAddr,
 		Params:     make(map[string]string),
 	}
-}
-
-// Deprecated
-func (srv *Service) Start() {
-	gin.SetMode(gin.ReleaseMode)
-	srv.router = gin.Default()
-	/*
-		Тут нужно
-		1. брать полученный запрос из мапы
-		2. определять тип с помощью reflect
-		3. создавать экземпляр структуры
-		4. передавать execute экземпляра в группу
-
-		//rtGroup := srv.router.Group("/person")
-		// for _, req := range Handlers {
-		// 	rtGroup.Handlers = append(rtGroup.Handlers, req)
-		// }
-		// rtGroup.Handlers = append(rtGroup.Handlers, )
-
-	*/
-
-	rtGroup := srv.router.Group(fmt.Sprintf("/%s", srv.name))
-	for reqName, req := range Handlers {
-		rtGroup.POST(reqName, func(c *gin.Context) {
-			execRequest(c, reqName, req)
-			//execRequestV2(c, &reqName, req)
-		})
-
-	}
-
-	srv.Log.Infof("%s is listening on port: %s", srv.name, srv.listenAddr)
-	srv.router.Run(srv.listenAddr)
-
 }
 
 func (srv *Service) ProcessRequest(req http.Request) error {
@@ -106,7 +75,7 @@ func execRequest(c *gin.Context, rName string, r Handler) err.Error {
 	jsonData, _ := io.ReadAll(c.Request.Body)
 	_ = json.Unmarshal(jsonData, &r)
 
-	rpl, error := r.Execute()
+	rpl, error := r.Run()
 	c.JSON(error.GetHttpCode(), rpl)
 	return *err.New().SetCode(0)
 }
@@ -117,21 +86,32 @@ func execRequestV2(c *gin.Context) err.Error {
 }
 
 func (srv *Service) Listen() {
+	// Init log
+	srv.Log.Init(srv.name)
+	// Setting gin
 	gin.SetMode(gin.ReleaseMode)
 	srv.router = gin.New()
 
-	srv.Log.Init(srv.name)
-
 	srv.router.Use(middleware.NewMiddleware(&srv.Log))
 	for reqName, req := range Handlers {
-		h := req 	
+		h := req
 		srv.router.POST(srv.name+reqName, func(c *gin.Context) {
 			c.BindJSON(&h)
-			rpl, err := h.Execute()
+			rpl, err := h.Run()
 			c.JSON(err.GetHttpCode(), rpl)
 
 		})
 	}
-	srv.Log.Infof("%s is listening on port: %s", srv.name, srv.listenAddr)
+
+	srv.Log.Infof("listening on port: %s", srv.listenAddr)
 	srv.router.Run(srv.listenAddr)
+}
+
+func (s *Service) GetEnvVariable(name string) string {
+	// Get env variables
+	err := godotenv.Load()
+	if err != nil {
+		s.Log.Fatalf("Error loading .env file")
+	}
+	return os.Getenv(name)
 }
