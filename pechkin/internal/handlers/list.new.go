@@ -8,20 +8,21 @@ import (
 )
 
 func init() {
-	telegram.RegisterHandler("/test", (*reqHandlerNewList)(nil))
+	telegram.RegisterHandler("/test", (*ReqHandlerNewList)(nil))
 }
 
-type reqHandlerNewList struct {
-	pechkinDefaultValues
+type ReqHandlerNewList struct {
+	PechkinDefaultValues
+	Name string
 }
 
-type rplHanderNewList struct {
+type RplHanderNewList struct {
 	Code    string
 	Message string
 }
 
-func (h *reqHandlerNewList) Run() (string, error.Error) {
-	l := h.Log
+func (h *ReqHandlerNewList) Run() (string, error.Error) {
+	l := h.log
 	s := service.NewRequestSender(l)
 
 	req := api.RequestListNew{}

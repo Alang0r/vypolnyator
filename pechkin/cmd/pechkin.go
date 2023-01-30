@@ -2,14 +2,14 @@ package main
 
 import (
 	"flag"
+	"time"
 
+	_ "github.com/Alang0r/vypolnyator/pechkin/internal/handlers"
 	"github.com/Alang0r/vypolnyator/pkg/error"
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	"github.com/Alang0r/vypolnyator/pkg/storage"
 	"github.com/Alang0r/vypolnyator/pkg/telegram"
 )
-
-var teleHandlers map[string]telegram.THandler
 
 func main() {
 	mem := storage.NewMemoryStorage()
@@ -20,7 +20,7 @@ func main() {
 	Srv.GetParameters(telegram.ParamTgToken)
 
 	go Srv.Listen()
-
+	time.Sleep(5 *time.Second)
 	b, err := telegram.NewBot(Srv)
 	if err.Code != error.ErrCodeNone {
 		Srv.Log.Errorf("Error start bot: %s", err)

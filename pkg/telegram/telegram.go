@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"time"
 
@@ -14,8 +15,10 @@ import (
 var (
 	THandlers map[string]THandler
 )
+
 func init() {
 	THandlers = make(map[string]THandler)
+
 }
 
 type THandler interface {
@@ -27,7 +30,6 @@ type TResult interface {
 }
 
 type Bot struct {
-	tH map[string]THandler
 	*tele.Bot
 	Log *log.Logger
 }
@@ -36,7 +38,6 @@ type Bot struct {
 func NewBot(s *service.Service) (*Bot, err.Error) {
 	b := Bot{}
 	b.Log = &s.Log
-
 	t := s.GetEnvVariable(ParamTgToken)
 	pref := tele.Settings{
 		Token:  t,
@@ -44,26 +45,23 @@ func NewBot(s *service.Service) (*Bot, err.Error) {
 	}
 
 	b.Bot, _ = tele.NewBot(pref)
-	b.tH = make(map[string]THandler)
-	b.tH = THandlers
 	return &b, *err.New().SetCode(0)
 }
 
 // RegisterHandler - Add handler to the map for call
 func RegisterHandler(hName string, hFunc THandler) {
 	THandlers[hName] = hFunc
-}
 
+}
 
 // Start bot to handle requests
 func (b *Bot) Listen() {
-
 	b.Handle(tele.OnText, func(c tele.Context) error {
 		rText := c.Text()
-
-
-		if h, ok := b.tH[rText]; ok {
-			rsp, err := h.Run()
+		if _, ok := THandlers[rText]; ok {
+			hndlr := reflect.New(reflect.TypeOf(THandlers["/test"]).Elem()).Interface().(THandler)
+			hndlr.SetLog(b.Log)
+			rsp, err := hndlr.Run()
 			if err.Code != 0 {
 				return c.Send(fmt.Sprintf("error run request: %d, %s", err.Code, err.Description))
 			}
@@ -75,7 +73,6 @@ func (b *Bot) Listen() {
 			return c.Send("Not Found")
 		}
 
-		
 	})
 
 	b.Start()
@@ -99,6 +96,5 @@ func verifyRequest(message string) {
 
 // parseRequest - get request "/reqName" from message and fill req params
 func parseRequest(message string) {
-
 
 }

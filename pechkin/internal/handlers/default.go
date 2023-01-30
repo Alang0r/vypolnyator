@@ -4,17 +4,20 @@ import (
 	"github.com/Alang0r/vypolnyator/pkg/log"
 )
 
-type pechkinDefaultValues struct {
-	Log *log.Logger
+
+type PechkinDefaultValues struct {
+	log *log.Logger
 }
 
 func init() {
 
 }
 
-func (v *pechkinDefaultValues) SetLog(l *log.Logger) {
+func (v *PechkinDefaultValues) SetLog(l *log.Logger) {
+	v.log = l
 }
 
-// func (v *pechkinDefaultValues) Log() *log.Logger {
-// 	return Tlog
+
+// func (v *PechkinDefaultValues) Log() *log.Logger {
+// 	return v.Logger
 // }

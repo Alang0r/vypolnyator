@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 
 	"github.com/Alang0r/vypolnyator/pkg/log"
 	"github.com/Alang0r/vypolnyator/pkg/middleware"
@@ -85,20 +86,24 @@ func execRequestV2(c *gin.Context) err.Error {
 */
 
 func (srv *Service) Listen() {
-	// Init log
+	// init log
 	srv.Log.Init(srv.name)
 
-	// Setting gin
+	// set gin
 	gin.SetMode(gin.ReleaseMode)
 	srv.router = gin.New()
 
+	// set middleware
 	srv.router.Use(middleware.NewMiddleware(&srv.Log))
+
+	// add handlers
 	for reqName, req := range Handlers {
-		h := req
-		h.SetLog(&srv.Log)
+		hndlr := reflect.New(reflect.TypeOf(req).Elem()).Interface().(Handler)
+		//h := req
+		hndlr.SetLog(&srv.Log)
 		srv.router.POST(srv.name+reqName, func(c *gin.Context) {
-			c.BindJSON(&h)
-			rpl, err := h.Run()
+			c.BindJSON(&hndlr)
+			rpl, err := hndlr.Run()
 			c.JSON(err.GetHttpCode(), rpl)
 
 		})

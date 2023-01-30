@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	service.RegisterHandler("/list/new", &RequestListNew{})
+	service.RegisterHandler("/list/new", (*RequestListNew)(nil))
 }
 
 func (h *RequestListNew) Request() string {
