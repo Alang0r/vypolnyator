@@ -29,7 +29,8 @@ func (logger *Logger) Init(args...string) {
 }
 
 func (logger *Logger) Errorf(template string, args ...interface{}) {
-	logger.log.Error().Msgf(template, args...)
+	tmp := fmt.Sprintf("%s: %s", logger.Name, template)
+	logger.log.Error().Msgf(tmp, args...)
 }
 
 func (logger *Logger) Infof(template string, args ...interface{}) {
@@ -37,13 +38,16 @@ func (logger *Logger) Infof(template string, args ...interface{}) {
 	logger.log.Info().Msgf(tmp, args...)
 }
 func (logger *Logger) Info(msg string) {
-	logger.log.Info().Msg(msg)
+	tmp := fmt.Sprintf("%s: %s", logger.Name, msg)
+	logger.log.Info().Msg(tmp)
 }
 
 func (logger *Logger) Fatalf(template string, args ...interface{}) {
-	logger.log.Fatal().Msgf(template, args...)
+	tmp := fmt.Sprintf("%s: %s", logger.Name, template)
+	logger.log.Fatal().Msgf(tmp, args...)
 }
 
 func (logger *Logger) Fatal(msg string) {
-	logger.log.Fatal().Msg(msg)
+	tmp := fmt.Sprintf("%s: %s", logger.Name, msg)
+	logger.log.Fatal().Msg(tmp)
 }

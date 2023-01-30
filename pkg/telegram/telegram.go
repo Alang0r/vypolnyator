@@ -6,17 +6,20 @@ import (
 	"time"
 
 	err "github.com/Alang0r/vypolnyator/pkg/error"
+	"github.com/Alang0r/vypolnyator/pkg/log"
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	tele "gopkg.in/telebot.v3"
 )
 
-var THandlers map[string]THandler
-
+var (
+	THandlers map[string]THandler
+)
 func init() {
 	THandlers = make(map[string]THandler)
 }
 
 type THandler interface {
+	SetLog(*log.Logger)
 	Run() (string, err.Error)
 }
 
@@ -26,10 +29,13 @@ type TResult interface {
 type Bot struct {
 	tH map[string]THandler
 	*tele.Bot
+	Log *log.Logger
 }
 
+// NewBot - creates new bot
 func NewBot(s *service.Service) (*Bot, err.Error) {
 	b := Bot{}
+	b.Log = &s.Log
 
 	t := s.GetEnvVariable(ParamTgToken)
 	pref := tele.Settings{
@@ -40,18 +46,21 @@ func NewBot(s *service.Service) (*Bot, err.Error) {
 	b.Bot, _ = tele.NewBot(pref)
 	b.tH = make(map[string]THandler)
 	b.tH = THandlers
-
 	return &b, *err.New().SetCode(0)
 }
 
+// RegisterHandler - Add handler to the map for call
 func RegisterHandler(hName string, hFunc THandler) {
 	THandlers[hName] = hFunc
 }
 
+
+// Start bot to handle requests
 func (b *Bot) Listen() {
 
 	b.Handle(tele.OnText, func(c tele.Context) error {
 		rText := c.Text()
+
 
 		if h, ok := b.tH[rText]; ok {
 			rsp, err := h.Run()
@@ -62,6 +71,7 @@ func (b *Bot) Listen() {
 			prepRpl := fmt.Sprintf("%s returned %s  with code %d", c.Text(), rsp, err.Code)
 			return c.Send(prepRpl)
 		} else {
+			b.Log.Errorf("error: request not found: %s", rText)
 			return c.Send("Not Found")
 		}
 
@@ -69,10 +79,6 @@ func (b *Bot) Listen() {
 	})
 
 	b.Start()
-}
-
-func (c *Bot) Send() {
-
 }
 
 func verifyRequest(message string) {
@@ -88,5 +94,11 @@ func verifyRequest(message string) {
 			h.Run()
 		}
 	}
+
+}
+
+// parseRequest - get request "/reqName" from message and fill req params
+func parseRequest(message string) {
+
 
 }

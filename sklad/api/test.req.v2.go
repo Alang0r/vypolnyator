@@ -27,12 +27,12 @@ type TestRpl struct {
 }
 
 func (r *TestReq) Run() (service.Reply, error.Error) {
-	//l := r.log()
+	l := r.l
 
 	rpl := &TestRpl{}
 
 	rpl.Data = fmt.Sprintf("Privet, %s, tvoy id: %d", r.Name, r.Id)
-	//l.Info(rpl.Data)
+	l.Info(rpl.Data)
 
 	return rpl, *error.New().SetCode(error.ErrCodeNone)
 }

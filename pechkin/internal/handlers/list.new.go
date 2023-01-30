@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/Alang0r/vypolnyator/pkg/error"
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	"github.com/Alang0r/vypolnyator/pkg/telegram"
@@ -14,6 +12,7 @@ func init() {
 }
 
 type reqHandlerNewList struct {
+	pechkinDefaultValues
 }
 
 type rplHanderNewList struct {
@@ -22,18 +21,17 @@ type rplHanderNewList struct {
 }
 
 func (h *reqHandlerNewList) Run() (string, error.Error) {
-
-	//out := rplHanderNewList{}
-	s := service.NewRequestSender()
+	l := h.Log
+	s := service.NewRequestSender(l)
 
 	req := api.RequestListNew{}
 	req.Name = "Dima"
 	rpl := api.ResponseListNew{}
 
 	if errReq := s.SendRequest(&req, &rpl); errReq != nil {
-		fmt.Println(errReq)
+		l.Info(errReq.Description)
 	} else {
-		fmt.Printf("\nSucess! Response: %+v", rpl)
+		l.Infof("Sucess! Response: %+v", rpl)
 	}
 
 	return rpl.Hello, *error.New().SetCode(0)

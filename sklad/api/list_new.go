@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-	//reqName =
 	service.RegisterHandler("/list/new", &RequestListNew{})
 }
 
@@ -27,6 +26,8 @@ type ResponseListNew struct {
 }
 
 func (r *RequestListNew) Run() (service.Reply, error.Error) {
+	l := r.l
+	l.Info("olololo test loga")
 	rpl := ResponseListNew{}
 	rpl.ID = 666
 	rpl.Hello = fmt.Sprintf("Privet iz %s tebya zovut %s", "list.new", r.Name)

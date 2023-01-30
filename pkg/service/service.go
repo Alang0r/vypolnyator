@@ -1,13 +1,10 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 
-	err "github.com/Alang0r/vypolnyator/pkg/error"
 	"github.com/Alang0r/vypolnyator/pkg/log"
 	"github.com/Alang0r/vypolnyator/pkg/middleware"
 	"github.com/Alang0r/vypolnyator/pkg/storage"
@@ -70,6 +67,7 @@ func getEnv(key string) (string, error) {
 	return value, nil
 }
 
+/*
 func execRequest(c *gin.Context, rName string, r Handler) err.Error {
 
 	jsonData, _ := io.ReadAll(c.Request.Body)
@@ -84,10 +82,12 @@ func execRequestV2(c *gin.Context) err.Error {
 
 	return *err.New().SetCode(err.ErrCodeNone)
 }
+*/
 
 func (srv *Service) Listen() {
 	// Init log
 	srv.Log.Init(srv.name)
+
 	// Setting gin
 	gin.SetMode(gin.ReleaseMode)
 	srv.router = gin.New()
@@ -95,6 +95,7 @@ func (srv *Service) Listen() {
 	srv.router.Use(middleware.NewMiddleware(&srv.Log))
 	for reqName, req := range Handlers {
 		h := req
+		h.SetLog(&srv.Log)
 		srv.router.POST(srv.name+reqName, func(c *gin.Context) {
 			c.BindJSON(&h)
 			rpl, err := h.Run()
@@ -103,7 +104,7 @@ func (srv *Service) Listen() {
 		})
 	}
 
-	srv.Log.Infof("listening on port: %s", srv.listenAddr)
+	srv.Log.Infof("listening on port %s", srv.listenAddr)
 	srv.router.Run(srv.listenAddr)
 }
 

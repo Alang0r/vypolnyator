@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/Alang0r/vypolnyator/pkg/error"
+	"github.com/Alang0r/vypolnyator/pkg/log"
 )
 
 type Reply interface {
@@ -17,6 +18,8 @@ type Handler interface {
 	Request() string
 	Url() string
 	Run() (Reply, error.Error)
+	SetLog(*log.Logger)
+	Log() *log.Logger
 }
 
 type Response interface {
@@ -27,10 +30,14 @@ type RequestSender interface {
 }
 
 type Sender struct {
+	l *log.Logger
 }
 
-func NewRequestSender() Sender {
-	s := Sender{}
+func NewRequestSender(l *log.Logger) Sender {
+	s := Sender{
+		l: l,
+	}
+
 	return s
 }
 
@@ -41,7 +48,7 @@ func (s *Sender) SendRequest(req Handler, rpl Response) *error.Error {
 		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
 	}
 
-	fmt.Printf("Sending <%s> request to <%s>", req.Request(), req.Url())
+	s.l.Infof("Sending <%s> request to <%s>", req.Request(), req.Url())
 	resp, err := http.Post(req.Url()+req.Request(), "application/json",
 		bytes.NewBuffer(json_data))
 
