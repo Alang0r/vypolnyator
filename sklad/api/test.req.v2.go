@@ -17,7 +17,7 @@ func (r TestReq) Request() string {
 }
 
 type TestReq struct {
-	skladDefaultValues
+	skladDefault
 	Id   int
 	Name string
 }

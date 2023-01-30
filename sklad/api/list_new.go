@@ -16,7 +16,7 @@ func (h *RequestListNew) Request() string {
 }
 
 type RequestListNew struct {
-	skladDefaultValues
+	skladDefault
 	Name string
 }
 
