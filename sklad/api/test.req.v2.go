@@ -8,12 +8,12 @@ import (
 )
 
 func init() {
-	request := "TestRequest"
+	request := "/testReq"
 	service.RegisterHandler(request, &TestReq{})
 }
 
 func (r TestReq) Request() string {
-	return reqPrefix + "TestRequest"
+	return reqPrefix + "/test"
 }
 
 type TestReq struct {

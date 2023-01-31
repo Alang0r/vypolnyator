@@ -11,6 +11,12 @@ require (
 require github.com/joho/godotenv v1.4.0
 
 require (
+	github.com/parnurzeal/gorequest v0.2.16 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	moul.io/http2curl v1.0.0 // indirect
+)
+
+require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect

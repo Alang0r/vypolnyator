@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -43,7 +42,6 @@ func NewRequestSender(l *log.Logger) Sender {
 
 	return s
 }
-
 func (s *Sender) SendRequest(req Handler, rpl Response) *error.Error {
 	json_data, err := json.Marshal(req)
 
@@ -67,12 +65,72 @@ func (s *Sender) SendRequest(req Handler, rpl Response) *error.Error {
 
 	err = json.Unmarshal(body, &rpl)
 	if err != nil {
-		fmt.Println(err)
+		s.l.Infof(err.Error())
 	}
 
 	return nil
 }
 
+func (s *Sender) SendRequestV1(req Handler, rpl Response) *error.Error {
+	// marshal req to json
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
+	}
+
+	reqName := req.Request()
+	reqID := req.GetReqID()
+	if reqID == "" {
+		reqID = generateReqID()
+		req.SetReqID(reqID)
+	}
+	url := req.Url() + reqName
+
+	// create request
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
+	}
+
+	// set headers
+	//request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	request.Header.Set("ReqID", reqID)
+	request.Header.Set("Request", reqName)
+
+	// send request
+	s.l.Infof("Sending %s, data: %s,  id <%s> to <%s>",string(jsonData), reqName, reqID, req.Url())
+	client := &http.Client{}
+
+	resp, err := client.Do(request)
+	if err != nil {
+		s.l.Errorf("error sending request", err.Error())
+	}
+
+	defer resp.Body.Close()
+
+	// resp, err := http.Post(req.Url()+req.Request(), "application/json",
+	// 	bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		return error.New().SetCode(error.ErrCodeInternal).SetMessage(err.Error())
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		s.l.Errorf("error sending request", err.Error())
+	}
+
+	
+	s.l.Infof("Get response: %+v", string(body))
+	err = json.Unmarshal(body, &rpl)
+	if err != nil {
+		s.l.Errorf("error sending request, %s", err.Error())
+	}
+
+	return nil
+}
+
+// generateReqID - generates uniq requestID
 func generateReqID() string {
 	return uuid.New().String()
 }

@@ -29,10 +29,10 @@ func (h *ReqHandlerNewList) Run() (string, error.Error) {
 	req.Name = "Dima"
 	rpl := api.ResponseListNew{}
 
-	if errReq := s.SendRequest(&req, &rpl); errReq != nil {
-		l.Info(errReq.Description)
+	if errReq := s.SendRequestV1(&req, &rpl); errReq != nil {
+		l.Infof("fail! send request returned",errReq.Description)
 	} else {
-		l.Infof("Sucess! Response: %+v", rpl)
+		l.Infof("sucess! Response: %+v", rpl)
 	}
 
 	return rpl.Hello, *error.New().SetCode(0)

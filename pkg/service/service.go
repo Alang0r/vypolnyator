@@ -95,6 +95,7 @@ func (srv *Service) Listen() {
 
 	// set middleware
 	srv.router.Use(middleware.NewMiddleware(&srv.Log))
+	srv.router.Use(gin.Recovery())
 
 	// add handlers
 	for reqName, req := range Handlers {
@@ -105,7 +106,6 @@ func (srv *Service) Listen() {
 			c.BindJSON(&hndlr)
 			rpl, err := hndlr.Run()
 			c.JSON(err.GetHttpCode(), rpl)
-
 		})
 	}
 
