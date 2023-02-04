@@ -10,11 +10,11 @@ import (
 
 func main() {
 
-	mem := storage.NewMemoryStorage()
+	s := storage.NewPGStorage()
 	listenAddr := flag.String("listenaddr", ":3001", "listening address")
 	flag.Parse()
 
-	srv := service.NewService("sklad", *listenAddr, mem)
-
+	srv := service.NewService("sklad", *listenAddr, &s)
+	srv.SetDB()
 	srv.Listen()
 }

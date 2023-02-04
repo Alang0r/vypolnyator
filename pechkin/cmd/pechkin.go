@@ -20,7 +20,7 @@ func main() {
 	Srv.GetParameters(telegram.ParamTgToken)
 
 	go Srv.Listen()
-	time.Sleep(5 *time.Second)
+	time.Sleep(5 * time.Second)
 	b, err := telegram.NewBot(Srv)
 	if err.Code != error.ErrCodeNone {
 		Srv.Log.Errorf("Error start bot: %s", err)
