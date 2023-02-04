@@ -28,7 +28,8 @@ type TestRpl struct {
 
 func (r *TestReq) Run() (service.Reply, error.Error) {
 	l := r.l
-
+	db := r.storage()
+	l.Infof("db on req: %s", db.Name())
 	rpl := &TestRpl{}
 
 	rpl.Data = fmt.Sprintf("Privet, %s, tvoy id: %d", r.Name, r.Id)

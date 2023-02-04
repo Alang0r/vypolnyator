@@ -33,11 +33,14 @@ type Service struct {
 }
 
 func NewService(serviceName string, listenAddr string, storage storage.Storage) *Service {
+	l := log.NewLogger()
+	l.Init(serviceName)
 	return &Service{
 		name:       serviceName,
 		store:      storage,
 		listenAddr: listenAddr,
 		Params:     make(map[string]string),
+		Log:        l,
 	}
 }
 
@@ -85,9 +88,6 @@ func execRequestV2(c *gin.Context) err.Error {
 */
 
 func (srv *Service) Listen() {
-	// init log
-	srv.Log.Init(srv.name)
-
 	// set gin
 	gin.SetMode(gin.ReleaseMode)
 	srv.router = gin.New()
@@ -100,7 +100,7 @@ func (srv *Service) Listen() {
 	for reqName, req := range Handlers {
 		hndlr := reflect.New(reflect.TypeOf(req).Elem()).Interface().(Handler)
 		//h := req
-		hndlr.SetLog(&srv.Log)
+		hndlr.SetEnv(&srv.Log, srv.store.DB())
 		srv.router.POST(srv.name+reqName, func(c *gin.Context) {
 			c.BindJSON(&hndlr)
 			rpl, err := hndlr.Run()
@@ -131,8 +131,14 @@ func (s *Service) SetDB() error {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Moscow", host, user, pass, dbName, port)
 
 	if err := s.store.Connect(dsn); err != nil {
-		s.Log.Errorf("error connect to DB: %s", err.Error())
+		s.Log.Errorf("error connect to DB %s: %s", dbName, err.Error())
 		return err
 	}
+
+	// if err := storage.Connect(dsn);err != nil {
+	// 	s.Log.Errorf("error connect to DB %s: %s", dbName, err.Error())
+	// 	return err
+	// }
+	s.Log.Infof("successfully conected to DB %s", dbName)
 	return nil
 }

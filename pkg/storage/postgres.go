@@ -13,16 +13,16 @@ func NewPGStorage() PostgresStorage {
 	return PostgresStorage{}
 }
 
-func (s PostgresStorage) Connect(dsn string) error {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+func (s *PostgresStorage) Connect(dsn string) error {
+	var err error
+	s.db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return err
 	}
-	s.db = db
 	return nil
 }
 
 
-func (s PostgresStorage) DB() gorm.DB{
+func (s *PostgresStorage) DB() gorm.DB{
 	return *s.db
 }

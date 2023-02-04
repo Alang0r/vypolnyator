@@ -25,6 +25,6 @@ func main() {
 	if err.Code != error.ErrCodeNone {
 		Srv.Log.Errorf("Error start bot: %s", err)
 	}
-	b.Listen()
 
+	b.Listen()
 }

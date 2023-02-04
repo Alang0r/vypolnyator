@@ -1,8 +1,8 @@
 package api
 
-import(
-	"github.com/Alang0r/vypolnyator/pkg/storage"
+import (
 	"github.com/Alang0r/vypolnyator/pkg/log"
+	"gorm.io/gorm"
 )
 
 func init() {
@@ -12,7 +12,8 @@ func init() {
 const reqPrefix = "/sklad"
 
 type skladDefault struct {
-	l *log.Logger
+	l     *log.Logger
+	db    gorm.DB
 	reqID string
 }
 
@@ -20,8 +21,9 @@ func (v *skladDefault) Url() string {
 	return "http://localhost:3001"
 }
 
-func (v *skladDefault) SetLog(l *log.Logger) {
+func (v *skladDefault) SetEnv(l *log.Logger, db gorm.DB) {
 	v.l = l
+	v.db = db
 }
 
 func (v *skladDefault) SetReqID(id string) {
@@ -32,9 +34,8 @@ func (v *skladDefault) GetReqID() string {
 	return v.reqID
 }
 
-func (v *skladDefault) storage() storage.Storage {
-	s := storage.NewMemoryStorage()
-	return s
+func (v *skladDefault) storage() gorm.DB {
+	return v.db
 }
 
 func (v *skladDefault) Log() *log.Logger {

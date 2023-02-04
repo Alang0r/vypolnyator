@@ -9,6 +9,7 @@ import (
 	"github.com/Alang0r/vypolnyator/pkg/error"
 	"github.com/Alang0r/vypolnyator/pkg/log"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Reply interface {
@@ -18,7 +19,7 @@ type Handler interface {
 	Request() string
 	Url() string
 	Run() (Reply, error.Error)
-	SetLog(*log.Logger)
+	SetEnv(*log.Logger, gorm.DB)
 	Log() *log.Logger
 	SetReqID(string)
 	GetReqID() string

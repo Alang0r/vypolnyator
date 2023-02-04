@@ -28,6 +28,8 @@ type ResponseListNew struct {
 func (r *RequestListNew) Run() (service.Reply, error.Error) {
 	l := r.l
 	l.Infof("ДАнные в запросе: %+v", r)
+	//db := r.storage()
+
 	rpl := ResponseListNew{}
 	rpl.ID = 666
 	rpl.Hello = fmt.Sprintf("Privet iz %s tebya zovut %s", "list.new", r.Name)
