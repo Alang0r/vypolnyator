@@ -1,2 +1,4 @@
 pechkin/cmd/.env
 sklad/cmd/.env
+.vscode/settings.json
+facecontrol/cmd/.env

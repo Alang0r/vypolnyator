@@ -27,8 +27,7 @@ type ResponseListNew struct {
 
 func (r *RequestListNew) Run() (service.Reply, error.Error) {
 	l := r.l
-	l.Infof("ДАнные в запросе: %+v", r)
-	//db := r.storage()
+	l.Infof("Данные в запросе: %+v", r.Name)
 
 	rpl := ResponseListNew{}
 	rpl.ID = 666

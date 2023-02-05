@@ -13,7 +13,7 @@ import (
 
 func main() {
 	mem := storage.NewMemoryStorage()
-	listenAddr := flag.String("listenaddr", ":3002", "listening address")
+	listenAddr := flag.String("listenaddr", ":3001", "listening address")
 	flag.Parse()
 
 	Srv := service.NewService("Pechkin", *listenAddr, mem)

@@ -11,7 +11,7 @@ import (
 func main() {
 
 	s := storage.NewPGStorage()
-	listenAddr := flag.String("listenaddr", ":3001", "listening address")
+	listenAddr := flag.String("listenaddr", ":3002", "listening address")
 	flag.Parse()
 
 	srv := service.NewService("sklad", *listenAddr, &s)
