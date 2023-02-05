@@ -1,26 +1,30 @@
 package test
 
 import (
-	"log"
 	"testing"
 
+	"github.com/Alang0r/vypolnyator/pkg/log"
 	"github.com/Alang0r/vypolnyator/pkg/service"
 	"github.com/Alang0r/vypolnyator/sklad/api"
 )
 
 func TestSendReq(t *testing.T) {
 
-	s := service.NewRequestSender()
+	l := log.NewLogger()
+	l.Init("Tester")
+	s := service.NewRequestSender(&l)
 
-	req := api.TestReq{}
-	req.Id = 5
-	req.Name = "Vasya"
-	rpl := api.TestRpl{}
+	req := api.ReqGroupNew{
+		Name:        "First",
+		Description: "First group for test",
+		UserID:      1,
+	}
+	rpl := api.ResponseGroupNew{}
 
 	if errReq := s.SendRequest(&req, &rpl); errReq != nil {
-		log.Println(errReq)
+		l.Errorf(errReq.Description)
 	} else {
-		log.Printf("\nSucess! Response: %+v", rpl)
+		l.Infof("\nSucess! Response: %+v", rpl)
 	}
 
 }

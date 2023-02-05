@@ -18,7 +18,7 @@ type skladDefault struct {
 }
 
 func (v *skladDefault) Url() string {
-	return "http://localhost:3001"
+	return "http://localhost:3002"
 }
 
 func (v *skladDefault) SetEnv(l *log.Logger, db gorm.DB) {
