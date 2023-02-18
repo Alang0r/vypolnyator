@@ -23,6 +23,7 @@ func (h *Handler) CreateNotifyGroup(c *gin.Context) {
 
 	c.JSON(http.StatusOK, map[string]interface{}{
 		//"id": id,
+		"Response": "successfully created new group",
 	})
 
 }

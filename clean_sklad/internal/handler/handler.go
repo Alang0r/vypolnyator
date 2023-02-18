@@ -34,6 +34,12 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		}
 	}
 
-
 	return router
+}
+
+func (h *Handler) SetRoutes(g *gin.RouterGroup) {
+	notifyGroup := g.Group("/NotifyGroup")
+
+	notifyGroup.POST("/", h.CreateNotifyGroup)
+
 }
